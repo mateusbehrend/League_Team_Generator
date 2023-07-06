@@ -65,7 +65,7 @@ const players = [
   {
     name: "Ethan",
     preference: [20, 30, 15, 0, 15],
-    value: 47,
+    value: 52,
     roleValue: [58, 58, 58, 30, 50],
   },
   {
@@ -78,7 +78,7 @@ const players = [
   {
     name: "Yasaswi",
     preference: [0, 0, 15, 5, 80],
-    value: 37,
+    value: 35,
     roleValue: [15, 15, 15, 15, 38],
   },
   {
@@ -102,7 +102,7 @@ const players = [
   {
     name: "Praveen",
     preference: [40, 5, 2.5, 2.5, 50],
-    value: 35,
+    value: 33,
     roleValue: [37, 15, 15, 15, 33],
   },
   {
@@ -116,31 +116,24 @@ let start = true;
 function App() {
   const [disabled, setDisabled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const tenTeams = getTeams();
+  console.log(tenTeams);
   return (
     <>
       <Header />
       <main>
         <div className="submitBody">
           <GetPlayers disabled={disabled} />
+
           <SubmitButton
             disabled={disabled}
             setDisabled={setDisabled}
             setIsLoading={setIsLoading}
           />
         </div>
-        {/* {!start ? (
-          isLoading ? (
-            <Loader />
-          ) : (
-            <TeamTables setIsLoading={setIsLoading} />
-          )
-        ) : null} */}
 
-        <section
-        //  className={finalTenTeams.length ? "mainBody" : "mainBodyHidden"}
-        >
-          <TeamTables />
-        </section>
+        {!start ? isLoading ? <Loader /> : <TeamTables /> : null}
+        <TeamTables />
       </main>
     </>
   );
@@ -212,7 +205,7 @@ function SubmitButton({ disabled, setDisabled, setIsLoading }) {
       className="submitButton"
       onClick={() =>
         updatedList.length === 10
-          ? (setDisabled(true), getTeams(), setIsLoading(true))
+          ? (setDisabled(true), setIsLoading(true))
           : alert("Not 10 people selected")
       }
     >
@@ -231,14 +224,14 @@ function shuffle(a) {
   }
   return a;
 }
-var finalTenTeams = [];
+
 function getTeams() {
+  var finalTenTeams = [];
   start = false;
   let fullStats = updatedList.map(function (element) {
     return players.find((search) => search.name === element);
   });
   let validOptions = [];
-  var difference = 0;
   //GETS 10 values within range of difference +-10
   for (let i = 0; i < 10; ) {
     let sumTeam1 = 0;
@@ -251,20 +244,16 @@ function getTeams() {
     for (let i = 0; i < list2.length; i++) {
       sumTeam2 += list2[i].value;
     }
-    difference = sumTeam1 - sumTeam2;
+    const difference = sumTeam1 - sumTeam2;
     //console.log(difference);
     if (difference <= 5 && difference >= -5) {
-      validOptions.push([{ difference: difference }, [...list1], [...list2]]);
+      validOptions.push([`difference:${difference}`, [...list1], [...list2]]);
       i++;
       console.log(list1, list2);
     }
   }
-  //COPY DIFFERENCES FOR LATER
-  console.log(validOptions);
-  const differencesArray = [];
-  for (let i = 0; i < 10; i++) {
-    differencesArray[i] = validOptions[i][0].difference;
-  }
+  const validOptionsCopy = validOptions;
+
   //Get Preferences
   //var topLane = Math.max.apply({}, validOptions[0].list1.preference[0]);
   //Loop through all 10 possibilites
@@ -399,13 +388,13 @@ function getTeams() {
     //console.log(team2);
     const sumPositionalDifference = calculatePositionalDifference(team1, team2);
     finalTenTeams[i] = [
-      { sumPositionalDifference: sumPositionalDifference },
-      { team1: team1 },
-      { team2: team2 },
-      { difference: differencesArray[i] },
+      { sumPositionalDifference },
+      { team1 },
+      { team2 },
+      { ...validOptions[i][0] },
     ];
   }
-  console.log(finalTenTeams);
+  return finalTenTeams;
 }
 
 function calculatePositionalDifference(team1, team2) {
@@ -421,109 +410,23 @@ function calculatePositionalDifference(team1, team2) {
     team2[2].roleValue[2] +
     team2[3].roleValue[3] +
     team2[4].roleValue[4];
-  return sumPositions1 - sumPositions2;
+  const sumPositionsDifference = sumPositions1 - sumPositions2;
+  return sumPositionsDifference;
 }
 
 function Loader() {
   return <p className="loadingMessage">Loading...</p>;
 }
 
-function TeamTables() {
-  if (finalTenTeams.length === 0) {
-    return;
-  }
-  return (
-    <div className="teams">
-      {finalTenTeams.map((matchup) => (
-        <Matchup
-          top1={matchup[1].team1[0]}
-          jg1={matchup[1].team1[1]}
-          mid1={matchup[1].team1[2]}
-          adc1={matchup[1].team1[3]}
-          sup1={matchup[1].team1[4]}
-          top2={matchup[2].team2[0]}
-          jg2={matchup[2].team2[1]}
-          mid2={matchup[2].team2[2]}
-          adc2={matchup[2].team2[3]}
-          sup2={matchup[2].team2[4]}
-          rawDifference={matchup[3].difference}
-          posDifference={matchup[0].sumPositionalDifference}
-        />
-      ))}
-    </div>
-  );
-}
-
-function Matchup({
-  top1,
-  jg1,
-  mid1,
-  adc1,
-  sup1,
-  top2,
-  jg2,
-  mid2,
-  adc2,
-  sup2,
-  rawDifference,
-  posDifference,
+function TeamTables({
+  sumPositionalDifference,
+  team1,
+  team2,
+  difference,
+  setIsLoading,
 }) {
-  return (
-    <>
-      <div className="matchup">
-        <div className="team1">
-          <p className="t1Title">Team 1 (Projected Roles)</p>
-          <ul>
-            <li>
-              <span className="role">Top:</span> {top1.name}
-            </li>
-            <li>
-              <span className="role">Jungle:</span> {jg1.name}
-            </li>
-            <li>
-              <span className="role">Mid:</span> {mid1.name}
-            </li>
-            <li>
-              <span className="role">Adc:</span> {adc1.name}
-            </li>
-            <li>
-              <span className="role">Support:</span> {sup1.name}
-            </li>
-          </ul>
-        </div>
-        <div className="Team2">
-          <p className="t2Title">Team 2 (Projected Roles)</p>
-          <ul>
-            <li>
-              <span className="role">Top:</span> {top2.name}
-            </li>
-            <li>
-              <span className="role">Jungle:</span> {jg2.name}
-            </li>
-            <li>
-              <span className="role">Mid:</span> {mid2.name}
-            </li>
-            <li>
-              <span className="role">Adc:</span> {adc2.name}
-            </li>
-            <li>
-              <span className="role">Support:</span> {sup2.name}
-            </li>
-          </ul>
-        </div>
-      </div>
-      {rawDifference ? (
-        <p className="DifferenceMessage">{`Team 1 has a raw value difference of ${rawDifference} from Team 2`}</p>
-      ) : (
-        <p className="DifferenceMessage">{`Teams have the same raw value`}</p>
-      )}
-      {posDifference ? (
-        <p className="DifferenceMessage">{`Team 1 has a projected positional difference of ${posDifference} from Team 2`}</p>
-      ) : (
-        <p className="DifferenceMessage">{`Teams have the same projected positional difference value`}</p>
-      )}
-    </>
-  );
+  setIsLoading(false);
+  return <p>{sumPositionalDifference}</p>;
 }
 
 export default App;
