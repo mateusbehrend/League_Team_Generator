@@ -1,3 +1,4 @@
 # Description
 
-Custom website built to construct two equivalent teams for league of legends. The final result displays 10 different team options, where the prospective roles are calculated and these calculations are used to generate a role-specific value difference and desplay these results to allow the players to accurately choose the most accurate results. Additonally, each team generation also displays a raw difference where the each player of the team has a estimated raw value that is used to compare to find an approximately equal team indicated by a raw difference that is close to 0.
+This web app, built with ReactJS, generates pairs of equivalent team formations for the League of Legends game. Each player's prospective role input is assigned an estimated raw value, which is then used to determine teams of relatively equal capabilites, whereby team equivalency is defined as a raw difference of approximately zero. The app outputs 10 pairs of varyious team options from which players can choose their teams.
+
